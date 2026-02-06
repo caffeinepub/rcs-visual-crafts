@@ -1,17 +1,26 @@
 import { useState } from 'react';
-import { useClients } from '../hooks/useQueries';
+import { useClients, useDeleteClient } from '../hooks/useQueries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Trash2 } from 'lucide-react';
 import ClientForm from '../components/clients/ClientForm';
 import { useNavigate } from '@tanstack/react-router';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuthorization } from '../hooks/useAuthorization';
+import ConfirmDeleteDialog from '../components/common/ConfirmDeleteDialog';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errors';
+import type { Client } from '../backend';
 
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
+  const { isAuthorized } = useAuthorization();
+  const deleteClient = useDeleteClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   const navigate = useNavigate();
 
   const filteredClients = clients.filter((client) =>
@@ -19,14 +28,34 @@ export default function ClientsPage() {
     client.phone.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDeleteClick = (client: Client) => {
+    setClientToDelete(client);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!clientToDelete) return;
+
+    try {
+      await deleteClient.mutateAsync(clientToDelete.id);
+      toast.success('Client deleted successfully');
+      setDeleteDialogOpen(false);
+      setClientToDelete(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold">Clients</h2>
-        <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Client
-        </Button>
+        {isAuthorized && (
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Client
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -71,13 +100,25 @@ export default function ClientsPage() {
                     <TableCell>{client.phone}</TableCell>
                     <TableCell>{client.email || '-'}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate({ to: '/clients/$clientId', params: { clientId: client.id.toString() } })}
-                      >
-                        View Orders
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate({ to: '/clients/$clientId', params: { clientId: client.id.toString() } })}
+                        >
+                          View Orders
+                        </Button>
+                        {isAuthorized && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(client)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -88,6 +129,15 @@ export default function ClientsPage() {
       </Card>
 
       {showAddDialog && <ClientForm onClose={() => setShowAddDialog(false)} />}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Client"
+        description={`Are you sure you want to delete "${clientToDelete?.name}"? This action cannot be undone. Any orders associated with this client will have their client reference removed.`}
+        isDeleting={deleteClient.isPending}
+      />
     </div>
   );
 }

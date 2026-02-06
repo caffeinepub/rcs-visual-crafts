@@ -1,27 +1,54 @@
 import { useState } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
-import { useClients, useOrdersByClient } from '../hooks/useQueries';
+import { useClients, useOrdersByClient, useDeleteOrder } from '../hooks/useQueries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import OrderForm from '../components/orders/OrderForm';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDate } from '../utils/dates';
+import { useAuthorization } from '../hooks/useAuthorization';
+import ConfirmDeleteDialog from '../components/common/ConfirmDeleteDialog';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errors';
+import type { Order } from '../backend';
 
 export default function ClientDetailPage() {
   const { clientId } = useParams({ from: '/clients/$clientId' });
   const { data: clients = [] } = useClients();
   const { data: orders = [], isLoading } = useOrdersByClient(BigInt(clientId));
+  const { isAuthorized } = useAuthorization();
+  const deleteOrder = useDeleteOrder();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
 
   const client = clients.find((c) => c.id.toString() === clientId);
 
   const filteredOrders = orders
     .filter((order) => statusFilter === 'all' || order.status === statusFilter)
     .sort((a, b) => Number(b.dueDate - a.dueDate));
+
+  const handleDeleteClick = (order: Order) => {
+    setOrderToDelete(order);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!orderToDelete) return;
+
+    try {
+      await deleteOrder.mutateAsync(orderToDelete.id);
+      toast.success('Order deleted successfully');
+      setDeleteDialogOpen(false);
+      setOrderToDelete(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
 
   if (!client) {
     return (
@@ -91,10 +118,12 @@ export default function ClientDetailPage() {
                   <SelectItem value="Completed">Completed</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={() => setShowAddDialog(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Order
-              </Button>
+              {isAuthorized && (
+                <Button onClick={() => setShowAddDialog(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Order
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -119,6 +148,7 @@ export default function ClientDetailPage() {
                   <TableHead>Total</TableHead>
                   <TableHead>Balance</TableHead>
                   <TableHead>Status</TableHead>
+                  {isAuthorized && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -134,6 +164,18 @@ export default function ClientDetailPage() {
                         {order.status}
                       </Badge>
                     </TableCell>
+                    {isAuthorized && (
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(order)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -145,6 +187,15 @@ export default function ClientDetailPage() {
       {showAddDialog && (
         <OrderForm clientId={BigInt(clientId)} onClose={() => setShowAddDialog(false)} />
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Order"
+        description={`Are you sure you want to delete this order? This action cannot be undone.`}
+        isDeleting={deleteOrder.isPending}
+      />
     </div>
   );
 }

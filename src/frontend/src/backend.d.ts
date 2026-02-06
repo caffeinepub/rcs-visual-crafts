@@ -25,6 +25,11 @@ export interface Asset {
     currency: string;
     amountInCurrency: number;
 }
+export interface ApkDownloadInfo {
+    url: string;
+    diskFile: ExternalBlob;
+    version: string;
+}
 export interface Document {
     id: bigint;
     blob: ExternalBlob;
@@ -64,7 +69,7 @@ export interface Client {
 export interface Order {
     id: bigint;
     status: string;
-    clientId: bigint;
+    clientId?: bigint;
     dueDate: bigint;
     description: string;
     deposit: number;
@@ -83,11 +88,11 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    addAsset(asset: Asset): Promise<void>;
-    addClient(client: Client): Promise<void>;
-    addDailyEntry(entry: DailyEntry): Promise<void>;
-    addDocument(name: string, blob: ExternalBlob, description: string, type: string, author: string, size: bigint, fileType: string): Promise<void>;
-    addOrder(order: Order): Promise<void>;
+    addAsset(asset: Asset): Promise<bigint>;
+    addClient(client: Client): Promise<bigint>;
+    addDailyEntry(entry: DailyEntry): Promise<bigint>;
+    addDocument(name: string, blob: ExternalBlob, description: string, type: string, author: string, size: bigint, fileType: string): Promise<bigint>;
+    addOrder(order: Order): Promise<bigint>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     deleteAsset(id: bigint): Promise<void>;
     deleteClient(id: bigint): Promise<void>;
@@ -98,6 +103,7 @@ export interface backendInterface {
     getAllDailyEntries(): Promise<Array<DailyEntry>>;
     getAllDocuments(): Promise<Array<Document>>;
     getAllOrders(): Promise<Array<Order>>;
+    getApkDownloadInfo(): Promise<ApkDownloadInfo | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getClientsOrderedById(): Promise<Array<Client>>;
@@ -106,6 +112,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    updateApkDownloadInfo(newInfo: ApkDownloadInfo): Promise<void>;
     updateAsset(id: bigint, asset: Asset): Promise<void>;
     updateClient(id: bigint, client: Client): Promise<void>;
     updateDailyEntry(id: bigint, entry: DailyEntry): Promise<void>;

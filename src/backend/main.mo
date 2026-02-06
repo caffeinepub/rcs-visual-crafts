@@ -1,29 +1,115 @@
 import Map "mo:core/Map";
-import Iter "mo:core/Iter";
-import Order "mo:core/Order";
 import Array "mo:core/Array";
+import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 import Nat "mo:core/Nat";
 import Text "mo:core/Text";
+import Int "mo:core/Int";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
   include MixinStorage();
 
-  // User Profiles
   public type UserProfile = {
     name : Text;
   };
 
+  public type Client = {
+    id : Nat;
+    name : Text;
+    address : Text;
+    contactPerson : Text;
+    email : Text;
+    phone : Text;
+    notes : Text;
+  };
+
+  public type Order = {
+    id : Nat;
+    clientId : ?Nat;
+    description : Text;
+    status : Text;
+    invoiceNumber : Text;
+    amount : Float;
+    currency : Text;
+    deposit : Float;
+    remainingBalance : Float;
+    startDate : Int;
+    dueDate : Int;
+  };
+
+  public type DailyEntry = {
+    id : Nat;
+    amount : Float;
+    description : Text;
+    currency : Text;
+    entryType : Text;
+    relatedClientId : ?Nat;
+    relatedOrderId : ?Nat;
+    expenseType : Text;
+    incomeType : Text;
+    paymentType : Text;
+    date : Nat;
+    receiptNumber : Text;
+    bankAccount : Text;
+    notes : Text;
+  };
+
+  public type Asset = {
+    id : Nat;
+    name : Text;
+    type_ : Text;
+    supplier : Text;
+    amountInCurrency : Float;
+    currency : Text;
+    purchaseDate : Int;
+    description : Text;
+    lifespan : Int;
+  };
+
+  public type Document = {
+    id : Nat;
+    name : Text;
+    blob : Storage.ExternalBlob;
+    description : Text;
+    type_ : Text;
+    author : Text;
+    size : Nat;
+    fileType : Text;
+    uploadedAt : Int;
+  };
+
+  public type ApkDownloadInfo = {
+    version : Text;
+    diskFile : Storage.ExternalBlob;
+    url : Text;
+  };
+
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let clients = Map.empty<Nat, Client>();
+  var nextClientId = 1;
+
+  let orders = Map.empty<Nat, Order>();
+  var nextOrderId = 1;
+
+  let dailyEntries = Map.empty<Nat, DailyEntry>();
+  var nextEntryId = 1;
+
+  let assets = Map.empty<Nat, Asset>();
+  var nextAssetId = 1;
+
+  let documents = Map.empty<Nat, Document>();
+  var nextDocumentId = 1;
+
+  var apkDownloadInfo : ?ApkDownloadInfo = null;
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -46,17 +132,6 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Clients
-  public type Client = {
-    id : Nat;
-    name : Text;
-    address : Text;
-    contactPerson : Text;
-    email : Text;
-    phone : Text;
-    notes : Text;
-  };
-
   module Client {
     public func compare(client1 : Client, client2 : Client) : Order.Order {
       Nat.compare(client1.id, client2.id);
@@ -67,18 +142,15 @@ actor {
     };
   };
 
-  let clients = Map.empty<Nat, Client>();
-  var nextClientId = 1;
-
-  public shared ({ caller }) func addClient(client : Client) : async () {
+  public shared ({ caller }) func addClient(client : Client) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add clients");
     };
-    let newClient = {
-      client with id = nextClientId;
-    };
+    let newClient = { client with id = nextClientId };
     clients.add(nextClientId, newClient);
+    let id = nextClientId;
     nextClientId += 1;
+    id;
   };
 
   public shared ({ caller }) func updateClient(id : Nat, client : Client) : async () {
@@ -98,7 +170,25 @@ actor {
     if (not clients.containsKey(id)) {
       Runtime.trap("Client not found");
     };
+
     clients.remove(id);
+
+    let updatedOrders = orders.map<Nat, Order, Order>(
+      func(_id, order) {
+        switch (order.clientId) {
+          case (?clientId) {
+            if (clientId == id) { { order with clientId = null } } else {
+              order;
+            };
+          };
+          case (null) { order };
+        };
+      }
+    );
+
+    for ((k, v) in updatedOrders.entries()) {
+      orders.add(k, v);
+    };
   };
 
   public query ({ caller }) func getClientsOrderedByName() : async [Client] {
@@ -115,39 +205,21 @@ actor {
     clients.values().toArray().sort();
   };
 
-  // Orders
-  public type Order = {
-    id : Nat;
-    clientId : Nat;
-    description : Text;
-    status : Text;
-    invoiceNumber : Text;
-    amount : Float;
-    currency : Text;
-    deposit : Float;
-    remainingBalance : Float;
-    startDate : Int;
-    dueDate : Int;
-  };
-
   module OrderModule {
     public func compare(order1 : Order, order2 : Order) : Order.Order {
       Nat.compare(order1.id, order2.id);
     };
   };
 
-  let orders = Map.empty<Nat, Order>();
-  var nextOrderId = 1;
-
-  public shared ({ caller }) func addOrder(order : Order) : async () {
+  public shared ({ caller }) func addOrder(order : Order) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add orders");
     };
-    let newOrder = {
-      order with id = nextOrderId;
-    };
+    let newOrder = { order with id = nextOrderId };
     orders.add(nextOrderId, newOrder);
+    let id = nextOrderId;
     nextOrderId += 1;
+    id;
   };
 
   public shared ({ caller }) func updateOrder(id : Nat, order : Order) : async () {
@@ -176,7 +248,10 @@ actor {
     };
     let filteredOrders = orders.values().filter(
       func(order) {
-        order.clientId == clientId;
+        switch (order.clientId) {
+          case (?id) { id == clientId };
+          case (null) { false };
+        };
       }
     );
     filteredOrders.toArray();
@@ -189,36 +264,15 @@ actor {
     orders.values().toArray().sort();
   };
 
-  // Daily Entries
-  public type DailyEntry = {
-    id : Nat;
-    amount : Float;
-    description : Text;
-    currency : Text;
-    entryType : Text; // "Ein" or "Aus"
-    relatedClientId : ?Nat;
-    relatedOrderId : ?Nat;
-    expenseType : Text;
-    incomeType : Text;
-    paymentType : Text;
-    date : Nat;
-    receiptNumber : Text;
-    bankAccount : Text;
-    notes : Text;
-  };
-
-  let dailyEntries = Map.empty<Nat, DailyEntry>();
-  var nextEntryId = 1;
-
-  public shared ({ caller }) func addDailyEntry(entry : DailyEntry) : async () {
+  public shared ({ caller }) func addDailyEntry(entry : DailyEntry) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add daily entries");
     };
-    let newEntry = {
-      entry with id = nextEntryId;
-    };
+    let newEntry = { entry with id = nextEntryId };
     dailyEntries.add(nextEntryId, newEntry);
+    let id = nextEntryId;
     nextEntryId += 1;
+    id;
   };
 
   public shared ({ caller }) func updateDailyEntry(id : Nat, entry : DailyEntry) : async () {
@@ -248,31 +302,15 @@ actor {
     dailyEntries.values().toArray();
   };
 
-  // Assets
-  public type Asset = {
-    id : Nat;
-    name : Text;
-    type_ : Text;
-    supplier : Text;
-    amountInCurrency : Float;
-    currency : Text;
-    purchaseDate : Int;
-    description : Text;
-    lifespan : Int;
-  };
-
-  let assets = Map.empty<Nat, Asset>();
-  var nextAssetId = 1;
-
-  public shared ({ caller }) func addAsset(asset : Asset) : async () {
+  public shared ({ caller }) func addAsset(asset : Asset) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add assets");
     };
-    let newAsset = {
-      asset with id = nextAssetId;
-    };
+    let newAsset = { asset with id = nextAssetId };
     assets.add(nextAssetId, newAsset);
+    let id = nextAssetId;
     nextAssetId += 1;
+    id;
   };
 
   public shared ({ caller }) func updateAsset(id : Nat, asset : Asset) : async () {
@@ -302,23 +340,15 @@ actor {
     assets.values().toArray();
   };
 
-  // Documents (New)
-  public type Document = {
-    id : Nat;
-    name : Text;
-    blob : Storage.ExternalBlob;
-    description : Text;
-    type_ : Text;
-    author : Text;
-    size : Nat;
-    fileType : Text;
-    uploadedAt : Int;
-  };
-
-  let documents = Map.empty<Nat, Document>();
-  var nextDocumentId = 1;
-
-  public shared ({ caller }) func addDocument(name : Text, blob : Storage.ExternalBlob, description : Text, type_ : Text, author : Text, size : Nat, fileType : Text) : async () {
+  public shared ({ caller }) func addDocument(
+    name : Text,
+    blob : Storage.ExternalBlob,
+    description : Text,
+    type_ : Text,
+    author : Text,
+    size : Nat,
+    fileType : Text
+  ) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add documents");
     };
@@ -334,7 +364,9 @@ actor {
       uploadedAt = 0;
     };
     documents.add(nextDocumentId, newDocument);
+    let id = nextDocumentId;
     nextDocumentId += 1;
+    id;
   };
 
   public shared ({ caller }) func updateDocument(id : Nat, document : Document) : async () {
@@ -362,5 +394,17 @@ actor {
       Runtime.trap("Unauthorized: Only users can view documents");
     };
     documents.values().toArray();
+  };
+
+  public query func getApkDownloadInfo() : async ?ApkDownloadInfo {
+    // No authorization check - publicly accessible for all users including guests
+    apkDownloadInfo;
+  };
+
+  public shared ({ caller }) func updateApkDownloadInfo(newInfo : ApkDownloadInfo) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update APK download information");
+    };
+    apkDownloadInfo := ?newInfo;
   };
 };

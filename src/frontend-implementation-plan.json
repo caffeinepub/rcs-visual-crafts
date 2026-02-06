@@ -1,87 +1,78 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Documents module (frontend): upload, list, download, delete with offline-first sync",
+  "title": "Stabilize APK direct-download link, admin update flow, and accurate link health status in Settings",
   "requirements": [
     {
-      "id": "REQ-11",
-      "summary": "Add a Documents page/route with upload, list, download/view, and delete actions for PDF/Word/Excel files (English UI).",
+      "id": "REQ-24",
+      "summary": "Ensure Settings → Android App provides a stable, publicly reachable direct-download APK URL and a reliable download action on desktop and mobile.",
       "acceptanceCriteria": [
-        "A new route exists at \"/documents\" and is reachable from the main navigation in AppLayout.",
-        "The Documents page provides an upload form that lets the user select a file and optionally enter a note/description before saving.",
-        "The upload UI validates file type to allow only PDF, Word, and Excel documents; disallowed file types show an English error message and are not uploaded.",
-        "The page shows a list/table of stored documents with at least: file name, type, upload date/time, and size.",
-        "Each document row provides actions to download/view the file (using browser download/open behavior) and delete the document with a confirmation step.",
-        "All user-facing labels/messages on the Documents page are in English."
+        "From Settings → Android App, clicking \"Download APK\" successfully starts a download or opens a direct-download URL in a new tab on both desktop and mobile browsers.",
+        "The configured APK URL must not return HTTP 404 when checked from a typical laptop browser network (no authentication required).",
+        "If the current configured URL is broken (e.g., 404), admins can update it and the UI reflects the new URL immediately after saving (no manual refresh required)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/DocumentsPage.tsx",
-          "operation": "create",
-          "description": "Create the Documents page UI: upload form (file + optional description), validation for PDF/Word/Excel, and a documents table with download/view + delete (with confirmation) actions. Use the blob-storage ExternalBlob capability (e.g., create from bytes for upload; use direct URL for download/open behavior). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/documents/DocumentUploadCard.tsx",
-          "operation": "create",
-          "description": "Add an encapsulated upload UI card used by DocumentsPage, including file-picker, description field, file-type validation, and upload progress display (English). Use the blob-storage ExternalBlob upload-progress capability (withUploadProgress) to show progress. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/documents/DocumentsTable.tsx",
-          "operation": "create",
-          "description": "Add a reusable table for document metadata (name, type, uploaded date/time, size) and row actions (download/view, delete with confirmation dialog) wired from DocumentsPage (English labels)."
-        },
-        {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/settings/ApkDownloadSection.tsx",
           "operation": "modify",
-          "description": "Register the new \"/documents\" route in the TanStack Router tree and wire it to DocumentsPage so it is navigable."
+          "description": "Harden the download UX to always use the configured direct-download URL first, open in a new tab reliably for mobile/desktop, and present a clearly visible direct link (e.g., \"Open link\") for users to validate reachability. Keep admin-only controls guarded via the authorization component’s isAdmin state. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "path": "frontend/src/hooks/useApkDownloadInfo.ts",
           "operation": "modify",
-          "description": "Add a \"Documents\" navigation item pointing to \"/documents\" in the main nav list (keep existing layout; English label)."
+          "description": "Improve update behavior so saving a new APK URL/version updates the cached apkDownloadInfo immediately (optimistic cache update) and triggers refetch/invalidation so the Settings UI updates without manual refresh. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-12",
-      "summary": "Integrate Documents into the React Query data layer with offline-first caching and queued upload/delete sync plus status indicators and retry.",
+      "id": "REQ-25",
+      "summary": "Maintain a correct admin-only APK update flow in Settings with clear English validation and error messages; prevent non-admin edits.",
       "acceptanceCriteria": [
-        "New React Query hooks exist for: listing documents, uploading a document, downloading/fetching a document by id, and deleting a document.",
-        "After upload or delete succeeds, the Documents list refreshes automatically (query invalidation consistent with existing patterns in frontend/src/hooks/useQueries.ts).",
-        "When offline, the Documents list shows the last cached metadata (if available).",
-        "When offline, document upload/delete operations are queued and sync automatically when connectivity returns, reusing the existing offline-first sync status patterns (English status text).",
-        "If a queued document operation fails to sync, the UI indicates sync failure and allows retry (consistent with existing offline-first UX patterns)."
+        "Non-admin users cannot see APK edit controls and cannot update APK download information.",
+        "Admins can click \"Edit\", enter an HTTPS/HTTP URL and optional version label, click \"Save\", and see a success message in English.",
+        "Invalid URLs are rejected with an English error message and no backend update is performed."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/settings/ApkDownloadSection.tsx",
           "operation": "modify",
-          "description": "Add Documents-focused React Query hooks: list documents (metadata), upload document, fetch document by id for download/view behavior, and delete document. Ensure upload/delete invalidate the documents list query on success (consistent with existing patterns). Use the blob-storage ExternalBlob capability for upload/download data handling. Verify the component's usage instructions before implementing."
+          "description": "Refine client-side validation to enforce HTTP/HTTPS URLs with English errors, ensure Save is disabled/blocked when invalid, and ensure non-admin users never see edit controls (using authorization component admin state). Also ensure error messages from failed saves are normalized to clear English. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/hooks/useOnlineStatus.ts",
-          "operation": "create",
-          "description": "Create a small hook that exposes browser connectivity state (online/offline) and change events to support offline-first behavior and UI messaging."
-        },
-        {
-          "path": "frontend/src/hooks/useDocumentsOfflineQueue.ts",
-          "operation": "create",
-          "description": "Implement an offline queue manager for document upload/delete operations: persist queued ops locally, attempt sync when online, track per-op status (pending/syncing/failed/succeeded), and expose retry controls for failed ops (English status text). For uploads, store enough data to replay the upload later (including file bytes representation and metadata). Use blob-storage ExternalBlob for reconstructing uploads when syncing. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/utils/documentsCache.ts",
-          "operation": "create",
-          "description": "Add a lightweight local cache helper for document metadata (read/write) so the list can render last-known metadata while offline (no backend calls)."
-        },
-        {
-          "path": "frontend/src/components/documents/DocumentsSyncStatus.tsx",
-          "operation": "create",
-          "description": "Create a small status/indicator component for the Documents page showing: offline/online state, queued operation count, last sync error (if any), and a retry action (English)."
-        },
-        {
-          "path": "frontend/src/pages/DocumentsPage.tsx",
+          "path": "frontend/src/hooks/useApkDownloadInfo.ts",
           "operation": "modify",
-          "description": "Wire the Documents page to use the new React Query hooks and offline queue/cache helpers: show cached metadata when offline, enqueue upload/delete when offline, auto-sync queued ops on reconnect, invalidate/refresh the list after successful sync, and surface sync state via DocumentsSyncStatus (English)."
+          "description": "Centralize URL validation messaging so invalid URLs throw a clear English error and do not call the backend; ensure authorization failures are surfaced as an English, user-friendly message. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/utils/validateHttpUrl.ts",
+          "operation": "create",
+          "description": "Add a small shared helper that validates a string as an HTTP/HTTPS URL and returns consistent English error messages for Settings form validation."
+        }
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "summary": "Make the APK link health check status accurate for the current configured URL and ensure it updates immediately after an admin saves a new URL.",
+      "acceptanceCriteria": [
+        "When an APK URL is present, the UI shows a health status message in English (e.g., \"Link is reachable and working\" or \"Link not found (404)\").",
+        "After saving a new APK URL, the health check is re-run against the new URL and the displayed status message updates accordingly.",
+        "If no APK URL is configured, the UI shows an English message indicating the APK is not available yet."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useApkLinkHealthCheck.ts",
+          "operation": "modify",
+          "description": "Adjust the health check logic to avoid reporting \"ok\" when CORS prevents reading status; ensure 404 is only reported when definitively detected, otherwise report an English \"could not verify\"/\"unknown\" state. Add a timeout and no-store behavior to keep results current after admin updates. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/settings/ApkDownloadSection.tsx",
+          "operation": "modify",
+          "description": "Ensure the Android App section always shows an English status when URL is missing (APK not available yet) and displays the current health status tied to the current configured URL. After a successful save, ensure the UI uses the updated URL immediately so the health check re-runs and the message updates without refresh. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useApkDownloadInfo.ts",
+          "operation": "modify",
+          "description": "Ensure cache invalidation and/or immediate cache update causes the health-check query key (which depends on URL) to update right after saving, triggering a re-check against the new URL. Verify the component's usage instructions before implementing."
         }
       ]
     }

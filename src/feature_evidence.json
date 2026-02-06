@@ -2,14 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-new-documents-page-in-the-frontend-that-allows-authorized-users-to-upload-view-download-and-delete-pdf-word-excel-documents",
-      "featureTitle": "Add a new Documents page in the frontend that allows authorized users to upload, view, download, and delete PDF/Word/Excel documents.",
+      "featureId": "feature-ensure-the-settings-android-app-download-section-provides-a-working-stable-publicly-reachable-direct-download-apk-url-no-404-so-authorized-users-can-download-the-apk-successfully-from-both-laptop-and-phone",
+      "featureTitle": "Ensure the Settings → Android App download section provides a working, stable, publicly reachable direct-download APK URL (no 404) so authorized users can download the APK successfully from both laptop and phone.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/documents/DocumentUploadCard.tsx",
-        "frontend/src/components/documents/DocumentsTable.tsx",
-        "frontend/src/components/layout/AppLayout.tsx",
-        "frontend/src/pages/DocumentsPage.tsx"
+        "frontend/src/components/settings/ApkDownloadSection.tsx",
+        "frontend/src/hooks/useApkDownloadInfo.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -21,20 +18,17 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-11"
+        "REQ-24"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-integrate-the-documents-module-into-the-existing-react-query-data-layer-and-offline-first-behavior-document-metadata-should-be-cached-locally-and-uploads-deletes-should-behave-sensibly-when-offline-queued-for-sync-with-the-existing-sync-state-indicators",
-      "featureTitle": "Integrate the Documents module into the existing React Query data layer and offline-first behavior: document metadata should be cached locally, and uploads/deletes should behave sensibly when offline (queued for sync) with the existing sync-state indicators.",
+      "featureId": "feature-keep-or-adjust-if-currently-incorrect-the-admin-update-flow-for-apk-download-info-so-an-administrator-can-quickly-update-apk-url-and-version-label-from-the-settings-page-with-clear-english-validation-and-error-messages",
+      "featureTitle": "Keep (or adjust if currently incorrect) the admin update flow for APK download info so an administrator can quickly update APK URL and version label from the Settings page, with clear English validation and error messages.",
       "files": [
-        "frontend/src/components/documents/DocumentsSyncStatus.tsx",
-        "frontend/src/hooks/useDocumentsOfflineQueue.ts",
-        "frontend/src/hooks/useOnlineStatus.ts",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/DocumentsPage.tsx",
-        "frontend/src/utils/documentsCache.ts"
+        "frontend/src/components/settings/ApkDownloadSection.tsx",
+        "frontend/src/hooks/useApkDownloadInfo.ts",
+        "frontend/src/utils/validateHttpUrl.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -46,7 +40,29 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-12"
+        "REQ-25"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-apk-link-health-check-status-shown-in-the-android-app-section-accurately-reflects-the-current-configured-url-and-updates-after-an-admin-saves-a-new-url",
+      "featureTitle": "Ensure the APK link health check status shown in the Android App section accurately reflects the current configured URL and updates after an admin saves a new URL.",
+      "files": [
+        "frontend/src/components/settings/ApkDownloadSection.tsx",
+        "frontend/src/hooks/useApkDownloadInfo.ts",
+        "frontend/src/hooks/useApkLinkHealthCheck.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-26"
       ],
       "confidence": "high"
     }

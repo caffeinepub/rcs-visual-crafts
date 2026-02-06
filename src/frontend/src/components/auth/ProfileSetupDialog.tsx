@@ -3,12 +3,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useSaveUserProfile } from '../../hooks/useQueries';
+import { useSaveCallerUserProfile } from '../../hooks/useQueries';
 import { Loader2 } from 'lucide-react';
 
 export default function ProfileSetupDialog() {
   const [name, setName] = useState('');
-  const saveProfile = useSaveUserProfile();
+  const saveProfile = useSaveCallerUserProfile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

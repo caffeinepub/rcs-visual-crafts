@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import AllowlistManager from '../components/settings/AllowlistManager';
+import ApkDownloadSection from '../components/settings/ApkDownloadSection';
 
 export default function SettingsPage() {
   const { currentPrincipal, userProfile, isAdmin } = useAuthorization();
@@ -28,12 +29,14 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      <ApkDownloadSection />
+
       {isAdmin && (
         <>
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              You have administrator privileges. You can manage user access below.
+              You have administrator privileges. You can manage user access and configure the Android app download below.
             </AlertDescription>
           </Alert>
           <AllowlistManager />

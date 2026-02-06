@@ -10,6 +10,11 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface ApkDownloadInfo {
+  'url' : string,
+  'diskFile' : ExternalBlob,
+  'version' : string,
+}
 export interface Asset {
   'id' : bigint,
   'purchaseDate' : bigint,
@@ -61,7 +66,7 @@ export type ExternalBlob = Uint8Array;
 export interface Order {
   'id' : bigint,
   'status' : string,
-  'clientId' : bigint,
+  'clientId' : [] | [bigint],
   'dueDate' : bigint,
   'description' : string,
   'deposit' : number,
@@ -103,14 +108,14 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addAsset' : ActorMethod<[Asset], undefined>,
-  'addClient' : ActorMethod<[Client], undefined>,
-  'addDailyEntry' : ActorMethod<[DailyEntry], undefined>,
+  'addAsset' : ActorMethod<[Asset], bigint>,
+  'addClient' : ActorMethod<[Client], bigint>,
+  'addDailyEntry' : ActorMethod<[DailyEntry], bigint>,
   'addDocument' : ActorMethod<
     [string, ExternalBlob, string, string, string, bigint, string],
-    undefined
+    bigint
   >,
-  'addOrder' : ActorMethod<[Order], undefined>,
+  'addOrder' : ActorMethod<[Order], bigint>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'deleteAsset' : ActorMethod<[bigint], undefined>,
   'deleteClient' : ActorMethod<[bigint], undefined>,
@@ -121,6 +126,7 @@ export interface _SERVICE {
   'getAllDailyEntries' : ActorMethod<[], Array<DailyEntry>>,
   'getAllDocuments' : ActorMethod<[], Array<Document>>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
+  'getApkDownloadInfo' : ActorMethod<[], [] | [ApkDownloadInfo]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getClientsOrderedById' : ActorMethod<[], Array<Client>>,
@@ -129,6 +135,7 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'updateApkDownloadInfo' : ActorMethod<[ApkDownloadInfo], undefined>,
   'updateAsset' : ActorMethod<[bigint, Asset], undefined>,
   'updateClient' : ActorMethod<[bigint, Client], undefined>,
   'updateDailyEntry' : ActorMethod<[bigint, DailyEntry], undefined>,

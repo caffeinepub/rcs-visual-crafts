@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Loader2, UserPlus } from 'lucide-react';
 import { UserRole } from '../../backend';
+import { Principal } from '@dfinity/principal';
 
 export default function AllowlistManager() {
   const [principal, setPrincipal] = useState('');
@@ -26,12 +27,21 @@ export default function AllowlistManager() {
       return;
     }
 
+    // Validate principal format
+    try {
+      Principal.fromText(principal.trim());
+    } catch (err) {
+      setError('Invalid Principal ID format');
+      return;
+    }
+
     setShowConfirm(true);
   };
 
   const handleConfirm = async () => {
     try {
-      await assignRole.mutateAsync({ principal: principal.trim(), role });
+      const userPrincipal = Principal.fromText(principal.trim());
+      await assignRole.mutateAsync({ user: userPrincipal, role });
       setPrincipal('');
       setRole(UserRole.user);
       setShowConfirm(false);

@@ -59,7 +59,7 @@ export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Order = IDL.Record({
   'id' : IDL.Nat,
   'status' : IDL.Text,
-  'clientId' : IDL.Nat,
+  'clientId' : IDL.Opt(IDL.Nat),
   'dueDate' : IDL.Int,
   'description' : IDL.Text,
   'deposit' : IDL.Float64,
@@ -84,6 +84,11 @@ export const Document = IDL.Record({
   'fileType' : IDL.Text,
   'author' : IDL.Text,
   'uploadedAt' : IDL.Int,
+});
+export const ApkDownloadInfo = IDL.Record({
+  'url' : IDL.Text,
+  'diskFile' : ExternalBlob,
+  'version' : IDL.Text,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 
@@ -115,15 +120,15 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addAsset' : IDL.Func([Asset], [], []),
-  'addClient' : IDL.Func([Client], [], []),
-  'addDailyEntry' : IDL.Func([DailyEntry], [], []),
+  'addAsset' : IDL.Func([Asset], [IDL.Nat], []),
+  'addClient' : IDL.Func([Client], [IDL.Nat], []),
+  'addDailyEntry' : IDL.Func([DailyEntry], [IDL.Nat], []),
   'addDocument' : IDL.Func(
       [IDL.Text, ExternalBlob, IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
-      [],
+      [IDL.Nat],
       [],
     ),
-  'addOrder' : IDL.Func([Order], [], []),
+  'addOrder' : IDL.Func([Order], [IDL.Nat], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'deleteAsset' : IDL.Func([IDL.Nat], [], []),
   'deleteClient' : IDL.Func([IDL.Nat], [], []),
@@ -134,6 +139,7 @@ export const idlService = IDL.Service({
   'getAllDailyEntries' : IDL.Func([], [IDL.Vec(DailyEntry)], ['query']),
   'getAllDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+  'getApkDownloadInfo' : IDL.Func([], [IDL.Opt(ApkDownloadInfo)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getClientsOrderedById' : IDL.Func([], [IDL.Vec(Client)], ['query']),
@@ -146,6 +152,7 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'updateApkDownloadInfo' : IDL.Func([ApkDownloadInfo], [], []),
   'updateAsset' : IDL.Func([IDL.Nat, Asset], [], []),
   'updateClient' : IDL.Func([IDL.Nat, Client], [], []),
   'updateDailyEntry' : IDL.Func([IDL.Nat, DailyEntry], [], []),
@@ -207,7 +214,7 @@ export const idlFactory = ({ IDL }) => {
   const Order = IDL.Record({
     'id' : IDL.Nat,
     'status' : IDL.Text,
-    'clientId' : IDL.Nat,
+    'clientId' : IDL.Opt(IDL.Nat),
     'dueDate' : IDL.Int,
     'description' : IDL.Text,
     'deposit' : IDL.Float64,
@@ -232,6 +239,11 @@ export const idlFactory = ({ IDL }) => {
     'fileType' : IDL.Text,
     'author' : IDL.Text,
     'uploadedAt' : IDL.Int,
+  });
+  const ApkDownloadInfo = IDL.Record({
+    'url' : IDL.Text,
+    'diskFile' : ExternalBlob,
+    'version' : IDL.Text,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   
@@ -263,9 +275,9 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addAsset' : IDL.Func([Asset], [], []),
-    'addClient' : IDL.Func([Client], [], []),
-    'addDailyEntry' : IDL.Func([DailyEntry], [], []),
+    'addAsset' : IDL.Func([Asset], [IDL.Nat], []),
+    'addClient' : IDL.Func([Client], [IDL.Nat], []),
+    'addDailyEntry' : IDL.Func([DailyEntry], [IDL.Nat], []),
     'addDocument' : IDL.Func(
         [
           IDL.Text,
@@ -276,10 +288,10 @@ export const idlFactory = ({ IDL }) => {
           IDL.Nat,
           IDL.Text,
         ],
-        [],
+        [IDL.Nat],
         [],
       ),
-    'addOrder' : IDL.Func([Order], [], []),
+    'addOrder' : IDL.Func([Order], [IDL.Nat], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'deleteAsset' : IDL.Func([IDL.Nat], [], []),
     'deleteClient' : IDL.Func([IDL.Nat], [], []),
@@ -290,6 +302,7 @@ export const idlFactory = ({ IDL }) => {
     'getAllDailyEntries' : IDL.Func([], [IDL.Vec(DailyEntry)], ['query']),
     'getAllDocuments' : IDL.Func([], [IDL.Vec(Document)], ['query']),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
+    'getApkDownloadInfo' : IDL.Func([], [IDL.Opt(ApkDownloadInfo)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getClientsOrderedById' : IDL.Func([], [IDL.Vec(Client)], ['query']),
@@ -302,6 +315,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'updateApkDownloadInfo' : IDL.Func([ApkDownloadInfo], [], []),
     'updateAsset' : IDL.Func([IDL.Nat, Asset], [], []),
     'updateClient' : IDL.Func([IDL.Nat, Client], [], []),
     'updateDailyEntry' : IDL.Func([IDL.Nat, DailyEntry], [], []),

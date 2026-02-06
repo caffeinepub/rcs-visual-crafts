@@ -1,19 +1,28 @@
 import { useState } from 'react';
-import { useDailyEntries } from '../hooks/useQueries';
+import { useDailyEntries, useDeleteDailyEntry } from '../hooks/useQueries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import DailyEntryForm from '../components/accounts/DailyEntryForm';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '../utils/dates';
+import { useAuthorization } from '../hooks/useAuthorization';
+import ConfirmDeleteDialog from '../components/common/ConfirmDeleteDialog';
+import { toast } from 'sonner';
+import { getErrorMessage } from '../utils/errors';
+import type { DailyEntry } from '../backend';
 
 export default function AccountsPage() {
   const { data: entries = [], isLoading } = useDailyEntries();
+  const { isAuthorized } = useAuthorization();
+  const deleteDailyEntry = useDeleteDailyEntry();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [entryType, setEntryType] = useState<'Income' | 'Expense'>('Income');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<DailyEntry | null>(null);
 
   const filteredEntries = entries
     .filter((entry) => typeFilter === 'all' || entry.entryType === typeFilter)
@@ -24,20 +33,40 @@ export default function AccountsPage() {
     setShowAddDialog(true);
   };
 
+  const handleDeleteClick = (entry: DailyEntry) => {
+    setEntryToDelete(entry);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!entryToDelete) return;
+
+    try {
+      await deleteDailyEntry.mutateAsync(entryToDelete.id);
+      toast.success('Entry deleted successfully');
+      setDeleteDialogOpen(false);
+      setEntryToDelete(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold">Accounts</h2>
-        <div className="flex gap-2">
-          <Button onClick={() => handleAddClick('Income')} variant="default">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Income
-          </Button>
-          <Button onClick={() => handleAddClick('Expense')} variant="outline">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Expense
-          </Button>
-        </div>
+        {isAuthorized && (
+          <div className="flex gap-2">
+            <Button onClick={() => handleAddClick('Income')} variant="default">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Income
+            </Button>
+            <Button onClick={() => handleAddClick('Expense')} variant="outline">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Expense
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card>
@@ -76,6 +105,7 @@ export default function AccountsPage() {
                   <TableHead>Description</TableHead>
                   <TableHead>Payment Mode</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
+                  {isAuthorized && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,6 +122,18 @@ export default function AccountsPage() {
                     <TableCell className={`text-right font-medium ${entry.entryType === 'Income' ? 'text-chart-4' : 'text-destructive'}`}>
                       {entry.entryType === 'Income' ? '+' : '-'}₹{entry.amount.toLocaleString('en-IN')}
                     </TableCell>
+                    {isAuthorized && (
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(entry)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -103,6 +145,15 @@ export default function AccountsPage() {
       {showAddDialog && (
         <DailyEntryForm entryType={entryType} onClose={() => setShowAddDialog(false)} />
       )}
+
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        title="Delete Entry"
+        description={`Are you sure you want to delete this ${entryToDelete?.entryType.toLowerCase()} entry? This action cannot be undone.`}
+        isDeleting={deleteDailyEntry.isPending}
+      />
     </div>
   );
 }

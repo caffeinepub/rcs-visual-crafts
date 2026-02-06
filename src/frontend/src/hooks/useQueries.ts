@@ -66,7 +66,20 @@ export function useDeleteClient() {
 }
 
 // Orders
-export function useOrders() {
+export function useOrdersByClient(clientId: bigint) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Order[]>({
+    queryKey: ['orders', 'client', clientId.toString()],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getOrdersByClient(clientId);
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAllOrders() {
   const { actor, isFetching } = useActor();
 
   return useQuery<Order[]>({
@@ -76,19 +89,6 @@ export function useOrders() {
       return actor.getAllOrders();
     },
     enabled: !!actor && !isFetching,
-  });
-}
-
-export function useOrdersByClient(clientId: bigint | undefined) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Order[]>({
-    queryKey: ['orders', 'client', clientId?.toString()],
-    queryFn: async () => {
-      if (!actor || !clientId) return [];
-      return actor.getOrdersByClient(clientId);
-    },
-    enabled: !!actor && !isFetching && !!clientId,
   });
 }
 
@@ -103,7 +103,6 @@ export function useAddOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['dailyEntries'] });
     },
   });
 }
@@ -119,7 +118,6 @@ export function useUpdateOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['dailyEntries'] });
     },
   });
 }
@@ -265,8 +263,7 @@ export function useDocuments() {
     queryKey: ['documents'],
     queryFn: async () => {
       if (!actor) return [];
-      const docs = await actor.getAllDocuments();
-      return docs;
+      return actor.getAllDocuments();
     },
     enabled: !!actor && !isFetching,
   });
@@ -319,7 +316,27 @@ export function useDeleteDocument() {
 }
 
 // User Profile
-export function useSaveUserProfile() {
+export function useGetCallerUserProfile() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  const query = useQuery<UserProfile | null>({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getCallerUserProfile();
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false,
+  });
+
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched,
+  };
+}
+
+export function useSaveCallerUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
@@ -334,15 +351,15 @@ export function useSaveUserProfile() {
   });
 }
 
-// Role assignment (admin only)
+// Authorization
 export function useAssignUserRole() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ principal, role }: { principal: string; role: UserRole }) => {
+    mutationFn: async ({ user, role }: { user: Principal; role: UserRole }) => {
       if (!actor) throw new Error('Actor not available');
-      await actor.assignCallerUserRole(Principal.fromText(principal), role);
+      await actor.assignCallerUserRole(user, role);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userRole'] });

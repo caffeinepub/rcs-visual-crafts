@@ -1,16 +1,19 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
+  "projectStateVersion": 15,
   "summary": "Private internal-use Android business management app (RCS Visual Crafts) built with Flutter, offline-first local storage, featuring authentication, dashboard KPIs, client/order management, daily accounts tracking, and assets tracking.",
   "architectural_notes": [
     "Flutter framework",
     "Offline-first app using local database (Hive / SharedPreferences)",
     "Android-only distribution via private APK (internal use)",
     "No liabilities module required for now; Firebase may be added later",
-    "Documents module needed: store/manage PDF/Word/Excel files (decide local-only vs synced later)"
+    "Documents module needed: store/manage PDF/Word/Excel files (decide local-only vs synced later)",
+    "APK distribution must support downloading the latest build from a laptop (not only on-device), via a stable direct link or shared artifact."
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Current APK download link returns 404 (distribution link broken / file missing or not publicly accessible)."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-implement-an-internal-only-authentication-gate-using-internet-identity-and-restrict-access-to-a-configurable-allowlist-of-authorized-internet-computer-principals-owner-business-partners-unauthorized-principals-must-be-blocked-from-all-app-pages-and-backend-write-read-apis",
@@ -91,6 +94,102 @@
         "REQ-12"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-expose-the-apk-download-link-in-the-settings-page-for-authorized-users-with-a-clear-single-click-download-action-that-works-on-both-phone-and-laptop",
+      "title": "Expose the APK download link in the Settings page for authorized users, with a clear, single-click download action that works on both phone and laptop.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-allow-administrators-to-update-the-apk-download-information-from-the-settings-page-without-code-changes-url-optional-version-label-and-ensure-the-updated-link-is-immediately-reflected-in-the-ui-after-saving",
+      "title": "Allow administrators to update the APK download information from the Settings page without code changes (URL + optional version label), and ensure the updated link is immediately reflected in the UI after saving.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-basic-client-side-link-health-check-for-the-configured-apk-url-and-display-an-english-warning-if-the-link-appears-broken-e-g-returns-404-so-admins-can-fix-it-proactively",
+      "title": "Add a basic client-side link health check for the configured APK URL and display an English warning if the link appears broken (e.g., returns 404) so admins can fix it proactively.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-delete-actions-in-the-clients-section-so-authorized-users-can-delete-a-client-from-the-clients-list-ui-with-a-confirmation-dialog-and-clear-success-error-feedback-in-english",
+      "title": "Add delete actions in the Clients section so authorized users can delete a client from the Clients list UI, with a confirmation dialog and clear success/error feedback in English.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-delete-actions-in-the-orders-section-client-detail-orders-list-so-authorized-users-can-delete-an-order-with-a-confirmation-dialog-and-clear-success-error-feedback-in-english",
+      "title": "Add delete actions in the Orders section (client detail orders list) so authorized users can delete an order, with a confirmation dialog and clear success/error feedback in English.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-delete-actions-in-the-accounts-section-daily-income-expense-entries-list-so-authorized-users-can-delete-a-daily-entry-with-a-confirmation-dialog-and-clear-success-error-feedback-in-english",
+      "title": "Add delete actions in the Accounts section (daily income/expense entries list) so authorized users can delete a daily entry, with a confirmation dialog and clear success/error feedback in English.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-delete-actions-in-the-assets-section-assets-list-so-authorized-users-can-delete-an-asset-with-a-confirmation-dialog-and-clear-success-error-feedback-in-english",
+      "title": "Add delete actions in the Assets section (assets list) so authorized users can delete an asset, with a confirmation dialog and clear success/error feedback in English.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-and-publish-a-new-android-apk-build-for-the-current-app-version-then-configure-the-app-so-authorized-users-can-download-this-apk-from-a-laptop-using-the-existing-settings-android-app-download-section-no-404-broken-link",
+      "title": "Generate and publish a new Android APK build for the current app version, then configure the app so authorized users can download this APK from a laptop using the existing Settings → Android App download section (no 404/broken link).",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-authorized-users-can-download-the-latest-android-apk-from-the-settings-page-by-configuring-a-stable-publicly-reachable-direct-download-apk-url-no-404-and-a-version-label-in-the-existing-apk-download-section",
+      "title": "Ensure authorized users can download the latest Android APK from the Settings page by configuring a stable, publicly reachable direct-download APK URL (no 404) and a version label in the existing APK Download section.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-settings-android-app-download-section-provides-a-working-stable-publicly-reachable-direct-download-apk-url-no-404-so-authorized-users-can-download-the-apk-successfully-from-both-laptop-and-phone",
+      "title": "Ensure the Settings → Android App download section provides a working, stable, publicly reachable direct-download APK URL (no 404) so authorized users can download the APK successfully from both laptop and phone.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-keep-or-adjust-if-currently-incorrect-the-admin-update-flow-for-apk-download-info-so-an-administrator-can-quickly-update-apk-url-and-version-label-from-the-settings-page-with-clear-english-validation-and-error-messages",
+      "title": "Keep (or adjust if currently incorrect) the admin update flow for APK download info so an administrator can quickly update APK URL and version label from the Settings page, with clear English validation and error messages.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-apk-link-health-check-status-shown-in-the-android-app-section-accurately-reflects-the-current-configured-url-and-updates-after-an-admin-saves-a-new-url",
+      "title": "Ensure the APK link health check status shown in the Android App section accurately reflects the current configured URL and updates after an admin saves a new URL.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -156,6 +255,40 @@
       "reqIds": [
         "REQ-10"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Provide a reliable way to generate and share a fresh APK download link (so users can download on phone/laptop without 404 errors)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Add backend support for storing and retrieving the current Android APK download information (at minimum: APK download URL, version label/text, and last-updated timestamp) so the app can always display the latest working APK link.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add delete functionality across all sections/modules (e.g., clients, orders, accounts entries, assets, documents) so users can remove records",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Ensure backend delete behavior is consistent for client deletion by preventing or handling orphaned records (orders linked to a deleted client) in a predictable way.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Generate the latest APK build for the current app version and provide a working download method that can be accessed from a laptop (direct APK file/link).",
+      "reqIds": [],
       "status": "pending"
     }
   ],
