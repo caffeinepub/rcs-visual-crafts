@@ -1,0 +1,92 @@
+{
+  "kind": "build_request",
+  "title": "Add Documents section to store PDF/Word/Excel files",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-10",
+      "text": "Implement backend support for a new Documents module that stores files and their metadata, accessible only to authorized users (same authorization rules as existing clients/orders/accounts/assets APIs).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "now i want one more feature to be addd a section all pdf and word and excel document store section"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All Documents APIs trap with an \"Unauthorized\" error for callers who are not allowlisted/authorized (consistent with existing patterns in backend/main.mo).",
+        "A Document type exists that includes: id, fileName, fileType (PDF/Word/Excel), uploadedAt (timestamp), optional notes/description, fileSizeBytes, and fileContent (binary).",
+        "The backend exposes methods to: add/upload a document, list all documents (metadata), fetch a single document by id (including binary), and delete a document.",
+        "Document IDs are assigned by the backend (auto-increment) similar to other modules.",
+        "Trying to fetch or delete a non-existent document returns a clear error (e.g., \"Document not found\")."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Add a new Documents page in the frontend that allows authorized users to upload, view, download, and delete PDF/Word/Excel documents.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ],
+        "quotes": [
+          "a section all pdf and word and excel document store section"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new route exists at \"/documents\" and is reachable from the main navigation in AppLayout.",
+        "The Documents page provides an upload form that lets the user select a file and optionally enter a note/description before saving.",
+        "The upload UI validates file type to allow only PDF, Word, and Excel documents; disallowed file types show an English error message and are not uploaded.",
+        "The page shows a list/table of stored documents with at least: file name, type, upload date/time, and size.",
+        "Each document row provides actions to download/view the file (using browser download/open behavior) and delete the document with a confirmation step.",
+        "All user-facing labels/messages on the Documents page are in English."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Integrate the Documents module into the existing React Query data layer and offline-first behavior: document metadata should be cached locally, and uploads/deletes should behave sensibly when offline (queued for sync) with the existing sync-state indicators.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-6"
+        ]
+      },
+      "acceptanceCriteria": [
+        "New React Query hooks exist for: listing documents, uploading a document, downloading/fetching a document by id, and deleting a document.",
+        "After upload or delete succeeds, the Documents list refreshes automatically (query invalidation consistent with existing patterns in frontend/src/hooks/useQueries.ts).",
+        "When offline, the Documents list shows the last cached metadata (if available).",
+        "When offline, document upload/delete operations are queued and sync automatically when connectivity returns, reusing the existing offline-first sync status patterns (English status text).",
+        "If a queued document operation fails to sync, the UI indicates sync failure and allows retry (consistent with existing offline-first UX patterns)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Do not edit files under frontend immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui). Compose using existing hooks/components instead.",
+    "All access control must remain consistent with the existing internal-only allowlist/role system; unauthorized principals must not be able to read or write document data."
+  ],
+  "nonGoals": [
+    "Do not add third-party storage providers (e.g., Google Drive/Dropbox/S3) or external databases.",
+    "Do not add OCR, document text extraction, or in-browser editing of Word/Excel files.",
+    "Do not redesign existing pages outside what is necessary to add the Documents navigation item and route.",
+    "Do not include documents (binary) in the existing Settings export/import JSON unless explicitly requested later."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [
+      "Use English for all user-facing text."
+    ],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

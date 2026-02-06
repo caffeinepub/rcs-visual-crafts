@@ -1,0 +1,54 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-a-new-documents-page-in-the-frontend-that-allows-authorized-users-to-upload-view-download-and-delete-pdf-word-excel-documents",
+      "featureTitle": "Add a new Documents page in the frontend that allows authorized users to upload, view, download, and delete PDF/Word/Excel documents.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/documents/DocumentUploadCard.tsx",
+        "frontend/src/components/documents/DocumentsTable.tsx",
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/pages/DocumentsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-integrate-the-documents-module-into-the-existing-react-query-data-layer-and-offline-first-behavior-document-metadata-should-be-cached-locally-and-uploads-deletes-should-behave-sensibly-when-offline-queued-for-sync-with-the-existing-sync-state-indicators",
+      "featureTitle": "Integrate the Documents module into the existing React Query data layer and offline-first behavior: document metadata should be cached locally, and uploads/deletes should behave sensibly when offline (queued for sync) with the existing sync-state indicators.",
+      "files": [
+        "frontend/src/components/documents/DocumentsSyncStatus.tsx",
+        "frontend/src/hooks/useDocumentsOfflineQueue.ts",
+        "frontend/src/hooks/useOnlineStatus.ts",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/DocumentsPage.tsx",
+        "frontend/src/utils/documentsCache.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

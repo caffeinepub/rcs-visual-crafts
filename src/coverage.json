@@ -1,0 +1,92 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-06T17:00:41.341Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 3,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-10",
+        "summary": "Implement backend support for a new Documents module that stores files and their metadata, accessible only to authorized users (same authorization rules as existing clients/orders/accounts/assets APIs).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-11",
+        "summary": "Add a new Documents page in the frontend that allows authorized users to upload, view, download, and delete PDF/Word/Excel documents.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/DocumentsPage.tsx",
+          "frontend/src/components/documents/DocumentUploadCard.tsx",
+          "frontend/src/components/documents/DocumentsTable.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/AppLayout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/DocumentsPage.tsx",
+          "frontend/src/components/documents/DocumentUploadCard.tsx",
+          "frontend/src/components/documents/DocumentsTable.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/AppLayout.tsx"
+        ]
+      },
+      {
+        "id": "REQ-12",
+        "summary": "Integrate the Documents module into the existing React Query data layer and offline-first behavior: document metadata should be cached locally, and uploads/deletes should behave sensibly when offline (queued for sync) with the existing sync-state indicators.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/hooks/useOnlineStatus.ts",
+          "frontend/src/hooks/useDocumentsOfflineQueue.ts",
+          "frontend/src/utils/documentsCache.ts",
+          "frontend/src/components/documents/DocumentsSyncStatus.tsx",
+          "frontend/src/pages/DocumentsPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/hooks/useOnlineStatus.ts",
+          "frontend/src/hooks/useDocumentsOfflineQueue.ts",
+          "frontend/src/utils/documentsCache.ts",
+          "frontend/src/components/documents/DocumentsSyncStatus.tsx",
+          "frontend/src/pages/DocumentsPage.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/blob-storage/Mixin.mo",
+    "backend/blob-storage/Storage.mo",
+    "backend/main.mo",
+    "backend/migration.mo",
+    "build-request.json",
+    "build-template/README.md",
+    "caffeine.lock.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/documents/DocumentUploadCard.tsx",
+    "frontend/src/components/documents/DocumentsSyncStatus.tsx",
+    "frontend/src/components/documents/DocumentsTable.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useDocumentsOfflineQueue.ts",
+    "frontend/src/hooks/useOnlineStatus.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/DocumentsPage.tsx",
+    "frontend/src/utils/documentsCache.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

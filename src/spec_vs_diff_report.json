@@ -1,0 +1,77 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-06T17:00:41.338Z",
+  "summary": "Diff adds a new /documents route, navigation item, Documents page UI (upload/list/delete/download) with offline queue + local metadata cache, and introduces a backend migration adding a Documents map and nextDocumentId. However, key backend API details and required Document shape/access-control behaviors are not fully evidenced, and the React Query layer does not clearly include a dedicated “fetch/download by id” hook.",
+  "missing_requirements": [
+    {
+      "id": "REQ-10",
+      "requirement": "Backend exposes methods to add/upload a document, list all documents (metadata only), fetch a single document by id (including binary), and delete a document; all must trap with \"Unauthorized\" for non-allowlisted callers; non-existent fetch/delete returns a clear \"Document not found\" error.",
+      "reason": "backend/main.mo is truncated and the diff summary does not show any Documents API methods or authorization checks/errors for them. Only a migration type/state addition is clearly shown.",
+      "evidence": [
+        "backend/main.mo (truncated; no Documents methods shown)",
+        "backend/migration.mo (adds documents/nextDocumentId, but no APIs)"
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "requirement": "A Document type exists that includes: id, fileName, fileType (PDF/Word/Excel), uploadedAt (timestamp), optional notes/description, fileSizeBytes, and fileContent (binary).",
+      "reason": "The only explicit Document type shown (in migration.mo) does not match the required field names/types: it uses `name` (not fileName), `description : Text` (not optional), `size : Nat` (not fileSizeBytes), and `blob : Storage.ExternalBlob` (not explicit fileContent binary).",
+      "evidence": [
+        "backend/migration.mo (type Document = { id; name; blob; description; type_; author; size; fileType; uploadedAt })"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "requirement": "New React Query hooks exist for: listing documents, uploading a document, downloading/fetching a document by id, and deleting a document.",
+      "reason": "DocumentsPage imports and uses `useDocuments`, `useAddDocument`, and `useDeleteDocument`, but there is no evidence in the provided diff summary of a hook to fetch/download a single document by id.",
+      "evidence": [
+        "frontend/src/pages/DocumentsPage.tsx (imports useDocuments/useAddDocument/useDeleteDocument only)",
+        "frontend/src/hooks/useQueries.ts (truncated; document hooks not visible beyond summary statement)"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Document metadata includes and UI displays an 'Author' field/column, and upload flow collects/sets author from user profile.",
+      "reason": "BuildRequest/AC did not request storing or displaying document author; required metadata fields did not include author.",
+      "evidence": [
+        "backend/migration.mo (Document has author : Text)",
+        "frontend/src/components/documents/DocumentsTable.tsx (table includes 'Author' column)",
+        "frontend/src/components/documents/DocumentUploadCard.tsx (derives author from userProfile?.name)"
+      ]
+    },
+    {
+      "description": "Upload UI states a 'max 2MB per file' limit.",
+      "reason": "No max file size requirement was specified in REQ-11/AC.",
+      "evidence": [
+        "frontend/src/components/documents/DocumentUploadCard.tsx (CardDescription: 'max 2MB per file')"
+      ]
+    },
+    {
+      "description": "Introduces a backend migration module and uses a blob-storage ExternalBlob-based storage model for documents.",
+      "reason": "The BuildRequest only required a new Documents module in the single backend actor; it did not request adding migrations or relying on blob-storage abstractions for document content (vs explicit binary storage).",
+      "evidence": [
+        "backend/migration.mo (new migration module; Document uses Storage.ExternalBlob)",
+        "backend/main.mo (includes MixinStorage and migration hook: '(with migration = Migration.run)')"
+      ]
+    }
+  ],
+  "confidence": 0.66,
+  "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/documents/DocumentUploadCard.tsx",
+    "frontend/src/components/documents/DocumentsSyncStatus.tsx",
+    "frontend/src/components/documents/DocumentsTable.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/hooks/useDocumentsOfflineQueue.ts",
+    "frontend/src/hooks/useOnlineStatus.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/DocumentsPage.tsx",
+    "frontend/src/utils/documentsCache.ts",
+    "project_state.json"
+  ]
+}

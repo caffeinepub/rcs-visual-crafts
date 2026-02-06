@@ -1,0 +1,93 @@
+import { useState } from 'react';
+import { useClients } from '../hooks/useQueries';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Plus, Search } from 'lucide-react';
+import ClientForm from '../components/clients/ClientForm';
+import { useNavigate } from '@tanstack/react-router';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+export default function ClientsPage() {
+  const { data: clients = [], isLoading } = useClients();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const navigate = useNavigate();
+
+  const filteredClients = clients.filter((client) =>
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.phone.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold">Clients</h2>
+        <Button onClick={() => setShowAddDialog(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Client
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search clients by name or phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-12 animate-pulse rounded bg-muted" />
+              ))}
+            </div>
+          ) : filteredClients.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              {searchTerm ? 'No clients found matching your search.' : 'No clients yet. Add your first client to get started.'}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredClients.map((client) => (
+                  <TableRow key={client.id.toString()}>
+                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell>{client.phone}</TableCell>
+                    <TableCell>{client.email || '-'}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate({ to: '/clients/$clientId', params: { clientId: client.id.toString() } })}
+                      >
+                        View Orders
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {showAddDialog && <ClientForm onClose={() => setShowAddDialog(false)} />}
+    </div>
+  );
+}

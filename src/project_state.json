@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Private internal-use Android business management app (RCS Visual Crafts) built with Flutter, offline-first local storage, featuring authentication, dashboard KPIs, client/order management, daily accounts tracking, and assets tracking.",
+  "architectural_notes": [
+    "Flutter framework",
+    "Offline-first app using local database (Hive / SharedPreferences)",
+    "Android-only distribution via private APK (internal use)",
+    "No liabilities module required for now; Firebase may be added later",
+    "Documents module needed: store/manage PDF/Word/Excel files (decide local-only vs synced later)"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-implement-an-internal-only-authentication-gate-using-internet-identity-and-restrict-access-to-a-configurable-allowlist-of-authorized-internet-computer-principals-owner-business-partners-unauthorized-principals-must-be-blocked-from-all-app-pages-and-backend-write-read-apis",
+      "title": "Implement an internal-only authentication gate using Internet Identity and restrict access to a configurable allowlist of authorized Internet Computer principals (owner + business partners). Unauthorized principals must be blocked from all app pages and backend write/read APIs.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-dashboard-page-that-displays-today-s-income-today-s-expenses-total-balance-and-a-monthly-summary-derived-from-account-entries-values-must-update-after-any-new-income-expense-entry-is-added-or-edited",
+      "title": "Build a dashboard page that displays: Today’s income, Today’s expenses, Total balance, and a Monthly summary derived from account entries. Values must update after any new income/expense entry is added or edited.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-client-order-management-ui-list-search-clients-add-a-new-client-and-create-update-orders-with-the-required-fields-order-type-order-date-delivery-date-amounts-status-display-per-client-order-history-and-highlight-pending-vs-completed-orders",
+      "title": "Implement client & order management UI: list/search clients, add a new client, and create/update orders with the required fields (order type, order date, delivery date, amounts, status). Display per-client order history and highlight Pending vs Completed orders.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-accounts-management-ui-for-daily-income-and-daily-expense-entries-with-fields-date-amount-payment-mode-cash-upi-bank-notes-provide-a-list-view-with-date-range-filtering-and-basic-editing-capabilities",
+      "title": "Implement accounts management UI for daily income and daily expense entries with fields: date, amount, payment mode (Cash/UPI/Bank), notes. Provide a list view with date-range filtering and basic editing capabilities.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-assets-module-ui-to-manage-a-list-of-business-assets-e-g-camera-printer-tools-materials-with-quantity-and-optional-value-provide-add-edit-and-list-functionality",
+      "title": "Implement an assets module UI to manage a list of business assets (e.g., camera, printer, tools, materials) with quantity and optional value. Provide add/edit and list functionality.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-offline-first-behavior-in-the-web-app-cache-the-latest-fetched-business-data-clients-orders-accounts-assets-locally-and-allow-creating-updating-records-while-offline-by-queueing-changes-for-sync-when-connectivity-returns-clearly-indicate-sync-state-in-english-e-g-offline-syncing-synced-sync-failed",
+      "title": "Add offline-first behavior in the web app: cache the latest fetched business data (clients/orders/accounts/assets) locally and allow creating/updating records while offline by queueing changes for sync when connectivity returns. Clearly indicate sync state in English (e.g., 'Offline', 'Syncing', 'Synced', 'Sync failed').",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-clean-fast-functionality-first-ui-theme-suitable-for-a-small-craft-business-warm-neutrals-high-contrast-typography-simple-card-based-layout-enforce-consistency-across-pages-spacing-form-styles-tables-lists-avoid-blue-purple-as-primary-brand-colors",
+      "title": "Apply a clean, fast, functionality-first UI theme suitable for a small craft business (warm neutrals, high contrast typography, simple card-based layout). Enforce consistency across pages (spacing, form styles, tables/lists). Avoid blue/purple as primary brand colors.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-settings-admin-page-for-managing-internal-access-and-basic-app-metadata-view-current-signed-in-principal-manage-allowlisted-principals-add-remove-and-provide-a-simple-export-data-and-import-data-json-option-for-backup-restore",
+      "title": "Add a settings/admin page for managing internal access and basic app metadata: view current signed-in principal, manage allowlisted principals (add/remove), and provide a simple 'Export data' and 'Import data' JSON option for backup/restore.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-documents-page-in-the-frontend-that-allows-authorized-users-to-upload-view-download-and-delete-pdf-word-excel-documents",
+      "title": "Add a new Documents page in the frontend that allows authorized users to upload, view, download, and delete PDF/Word/Excel documents.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-integrate-the-documents-module-into-the-existing-react-query-data-layer-and-offline-first-behavior-document-metadata-should-be-cached-locally-and-uploads-deletes-should-behave-sensibly-when-offline-queued-for-sync-with-the-existing-sync-state-indicators",
+      "title": "Integrate the Documents module into the existing React Query data layer and offline-first behavior: document metadata should be cached locally, and uploads/deletes should behave sensibly when offline (queued for sync) with the existing sync-state indicators.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Authentication: simple login system restricted to authorized internal users",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Dashboard showing today’s income, today’s expenses, total balance, and monthly summary",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Client & order management: add clients with contact details, order type, dates, amounts (total/advance/balance), and status (Pending/Completed)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Accounts management: daily income/expense entries with date, amount, payment mode (Cash/UPI/Bank), and notes",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Assets module: list assets with quantity and optional value",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Offline-first local data storage using Hive/SharedPreferences (Firebase can be added later)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Android-only scope with APK output; clean UI focused on speed and functionality over design",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Create the core backend data model and CRUD APIs for: (a) clients + orders, (b) daily account entries (income/expense), and (c) assets. Persist all data in the single Motoko canister actor and expose typed methods for the frontend to query and mutate records.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Add a Documents section to store and manage PDF, Word, and Excel files within the app",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Implement backend support for a new Documents module that stores files and their metadata, accessible only to authorized users (same authorization rules as existing clients/orders/accounts/assets APIs).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "RCS Visual Crafts",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
